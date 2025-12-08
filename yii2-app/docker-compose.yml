@@ -1,0 +1,75 @@
+services:
+  # PHP + Yii2
+  php:
+    image: yiisoftware/yii2-php:8.2-apache
+    container_name: yii-php
+    volumes:
+      - ../yii2-app:/app
+    ports:
+      - "8000:80"
+    depends_on:
+      - db
+      - story-api
+    networks:
+      - yii-network
+
+  # MySQL
+  db:
+    image: mysql:8
+    container_name: yii-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: storydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: pass
+    ports:
+      - "3307:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - yii-network
+
+  # phpMyAdmin
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: yii-phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+    networks:
+      - yii-network
+
+  # Python Story Generator API
+  story-api:
+    build:
+      context: ../python-story-api # путь к папке с Python API
+    container_name: python-api
+    ports:
+      - "8001:8000"
+    env_file:
+      - ../python-story-api/.env # путь к файлу .env
+    volumes:
+      - ../python-story-api/app:/app/app # монтируем код для live reload
+    restart: unless-stopped
+    depends_on:
+      - db
+    networks:
+      - yii-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+networks:
+  yii-network:
+
+volumes:
+  db_data:

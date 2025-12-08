@@ -1,0 +1,19 @@
+# FastAPI и сервер
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+
+# OpenAI
+openai==1.55.3
+
+# Pydantic и валидация
+pydantic==2.10.3
+pydantic-settings==2.6.1
+
+# Переменные окружения
+python-dotenv==1.0.1
+
+# HTTP клиент (для тестирования)
+httpx==0.28.1
+
+# Типизация
+typing-extensions==4.12.2
