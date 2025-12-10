@@ -18,6 +18,16 @@ class StoryGeneratorService:
         self.model = settings.OPENAI_MODEL
         logger.info(f"✅ OpenAI async client initialized with model: {self.model}")
 
+    async def cleanup(self):
+        """Очистка ресурсов - закрытие OpenAI клиента"""
+        if self.client:
+            await self.client.close()
+            logger.info("🧹 OpenAI client closed")
+
+    def __del__(self):
+        """Деструктор для дополнительной очистки"""
+        logger.info("🗑️ StoryGeneratorService destroyed")
+
     # ---------------------------- Языковые функции ----------------------------
 
     def _get_language_name(self, language: str) -> str:
@@ -131,6 +141,7 @@ class StoryGeneratorService:
     ) -> AsyncGenerator[str, None]:
         """Генерация сказки в потоковом режиме (ASYNC)."""
 
+        stream = None
         try:
             logger.info("📖 Starting story generation...")
             logger.info(f"🌍 Language: {language}")
@@ -170,3 +181,13 @@ class StoryGeneratorService:
             error_message = f"\n\n---\n\n**Ошибка при генерации сказки:** {str(e)}\n"
             yield error_message
             raise
+        finally:
+            # Явная очистка stream объекта
+            if stream:
+                try:
+                    # Закрываем stream если есть метод close
+                    if hasattr(stream, 'close'):
+                        await stream.close()
+                    logger.info("🧹 Stream object cleaned up")
+                except Exception as cleanup_error:
+                    logger.warning(f"⚠️ Error cleaning up stream: {cleanup_error}")

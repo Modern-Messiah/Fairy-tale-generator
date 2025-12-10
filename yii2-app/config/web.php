@@ -18,6 +18,9 @@ $config = [
         ],
         "cache" => [
             "class" => "yii\caching\FileCache",
+            "cachePath" => "@runtime/cache",
+            "directoryLevel" => 2,
+            "keyPrefix" => "story_",
         ],
         "user" => [
             "identityClass" => "app\models\User",

@@ -10,6 +10,9 @@ services:
     depends_on:
       - db
       - story-api
+    environment:
+      YII_DEBUG: "false"
+      YII_ENV: "prod"
     networks:
       - yii-network
 
@@ -54,6 +57,8 @@ services:
       - "8001:8000"
     env_file:
       - ../python-story-api/.env # путь к файлу .env
+    environment:
+      ENVIRONMENT: "prod"
     volumes:
       - ../python-story-api/app:/app/app # монтируем код для live reload
     restart: unless-stopped

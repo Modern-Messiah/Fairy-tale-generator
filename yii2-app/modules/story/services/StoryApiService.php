@@ -105,9 +105,25 @@ class StoryApiService extends Component
             $body = $response->getBody();
             
             $buffer = '';
+            $maxBufferLength = 8192; // 8KB лимит буфера для предотвращения утечки памяти
+            $maxContentLength = 100000; // 100KB лимит общего контента
             
             while (!$body->eof()) {
                 $chunk = $body->read(1024);
+                
+                // Проверяем лимит буфера перед добавлением
+                if (strlen($buffer) + strlen($chunk) > $maxBufferLength) {
+                    // Принудительно очищаем буфер если он слишком большой
+                    Yii::warning("Buffer length limit exceeded, forcing flush", __METHOD__);
+                    if ($buffer !== '' && mb_check_encoding($buffer, 'UTF-8')) {
+                        $fullContent .= $buffer;
+                        if ($callback && is_callable($callback)) {
+                            call_user_func($callback, $buffer);
+                        }
+                    }
+                    $buffer = '';
+                }
+                
                 $buffer .= $chunk;
                 
                 // Пытаемся выделить валидную UTF-8 строку из начала буфера
@@ -127,9 +143,15 @@ class StoryApiService extends Component
                 }
                 
                 if ($validPart !== '') {
-                    $fullContent .= $validPart;
-                    if ($callback && is_callable($callback)) {
-                        call_user_func($callback, $validPart);
+                    // Проверяем лимит общего контента
+                    if (strlen($fullContent) < $maxContentLength) {
+                        $fullContent .= $validPart;
+                        if ($callback && is_callable($callback)) {
+                            call_user_func($callback, $validPart);
+                        }
+                    } else {
+                        // Логируем превышение лимита контента
+                        Yii::warning("Content length limit exceeded, truncating output", __METHOD__);
                     }
                     $buffer = $tail;
                 }
@@ -138,15 +160,27 @@ class StoryApiService extends Component
             
             // Если после завершения потока что-то осталось в буфере (хвост), дописываем
             if ($buffer !== '') {
-                $fullContent .= $buffer;
-                if ($callback && is_callable($callback)) {
-                   call_user_func($callback, $buffer);
+                // Проверяем лимит перед добавлением хвоста
+                if (strlen($fullContent) < $maxContentLength) {
+                    $fullContent .= $buffer;
+                    if ($callback && is_callable($callback)) {
+                       call_user_func($callback, $buffer);
+                    }
                 }
             }
+
+            // Очищаем буфер для освобождения памяти
+            $buffer = null;
+            unset($buffer);
 
             return $fullContent;
         } catch (GuzzleException $e) {
             Yii::error("Stream story generation failed: " . $e->getMessage(), __METHOD__);
+            
+            // Очищаем буфер при ошибке
+            $buffer = null;
+            unset($buffer);
+            
             throw new Exception('Ошибка при генерации сказки: ' . $e->getMessage());
         }
     }

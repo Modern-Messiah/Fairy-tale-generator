@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -36,8 +37,15 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Shutdown
+    # Shutdown - явная очистка ресурсов
     logger.info("👋 Shutting down Story Generator API...")
+    if story_service:
+        try:
+            await story_service.cleanup()
+            story_service = None
+            logger.info("✅ Story service cleaned up")
+        except Exception as e:
+            logger.error(f"❌ Error cleaning up story service: {e}")
 
 
 # Создание FastAPI приложения
@@ -98,6 +106,11 @@ async def generate_story(request: StoryRequest):
         async def generate():
             """Async generator для потоковой отправки данных"""
             chunk_count = 0
+            if not story_service:
+                logger.error("❌ Story service not available")
+                yield "Ошибка: сервис не доступен"
+                return
+                
             async for chunk in story_service.generate_story_stream(
                 age=request.age,
                 language=request.language,
@@ -127,6 +140,11 @@ async def generate_story(request: StoryRequest):
 
 
 if __name__ == "__main__":
+    is_dev = os.getenv("ENVIRONMENT") == "dev"
     uvicorn.run(
-        "app.main:app", host="0.0.0.0", port=8000, reload=True, log_level="info"
+        "app.main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=is_dev,
+        log_level="info" if is_dev else "warning",
     )

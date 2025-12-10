@@ -111,8 +111,10 @@ class DefaultController extends Controller
             header("Connection: keep-alive");
             header("X-Accel-Buffering: no"); // Отключаем буферизацию nginx
 
-            // Переменная для хранения полного контента
+            // Переменная для хранения полного контента с лимитом
             $fullContent = "";
+            $maxContentLength = 50000; // 50KB лимит для предотвращения утечки памяти
+            $chunkCount = 0;
 
             // Логируем начало
             Yii::info("Starting stream generation", __METHOD__);
@@ -120,8 +122,16 @@ class DefaultController extends Controller
             // Генерируем сказку с потоковым выводом
             $this->_apiService->generateStoryStream($formData, function (
                 $chunk,
-            ) use (&$fullContent) {
-                $fullContent .= $chunk;
+            ) use (&$fullContent, $maxContentLength, &$chunkCount) {
+                // Проверяем лимит длины контента
+                if (strlen($fullContent) < $maxContentLength) {
+                    $fullContent .= $chunk;
+                } else {
+                    // Логируем превышение лимита
+                    Yii::warning("Content length limit exceeded, truncating", __METHOD__);
+                }
+                
+                $chunkCount++;
 
                 // Отправляем chunk клиенту
                 $sseData = json_encode(["chunk" => $chunk]);
@@ -162,8 +172,21 @@ class DefaultController extends Controller
 
             // Очищаем данные из сессии
             Yii::$app->session->remove("storyFormData");
+            
+            // Очищаем переменные для освобождения памяти
+            $fullContent = null;
+            unset($fullContent);
+            
         } catch (\Exception $e) {
             Yii::error($e->getMessage(), __METHOD__);
+            
+            // Гарантированная очистка сессии при ошибке
+            Yii::$app->session->remove("storyFormData");
+            
+            // Очищаем переменные
+            $fullContent = null;
+            unset($fullContent);
+            
             $errorData = json_encode([
                 "error" => "Ошибка генерации: " . $e->getMessage(),
             ]);
