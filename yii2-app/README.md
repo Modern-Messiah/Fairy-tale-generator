@@ -1,8 +1,9 @@
-# 🎨 Story Generator - Yii2 Frontend
+# Story Generator - Yii2 Frontend
 
-Веб-интерфейс для генерации детских сказок на базе Yii2 Framework.
+**Веб-приложение на Yii2 Framework для генерации детских сказок**
 
-## 🚀 Быстрый старт с Docker (Рекомендуется)
+
+## Быстрый старт с Docker (Рекомендуется)
 
 ### Шаг 1: Клонирование репозитория
 
@@ -11,7 +12,7 @@ git clone <repository-url>
 cd <project-directory>
 ```
 
-### Шаг 2: Настройка Yii2
+### Шаг 2: Настройка окружения
 
 Создайте файл `config/db.php` в папке `yii2-app/`:
 
@@ -26,6 +27,18 @@ return [
 ];
 ```
 
+Настройте модуль Story в `config/web.php`:
+
+```php
+'modules' => [
+    'story' => [
+        'class' => 'app\modules\story\Module',
+        'pythonApiUrl' => 'http://python-api:8000',  // URL Python API в Docker
+        'pythonApiTimeout' => 60,
+    ],
+],
+```
+
 ### Шаг 3: Запуск контейнеров
 
 ```bash
@@ -34,12 +47,12 @@ docker-compose up -d
 ```
 
 Это запустит:
-- 🐘 **PHP (Yii2)** - `http://localhost:8000`
-- 🐍 **Python API** - `http://localhost:8001`
-- 🗄️ **MySQL** - `localhost:3307`
-- 🔧 **phpMyAdmin** - `http://localhost:8081`
+- **PHP (Yii2)** - `http://localhost:8000`
+- **Python API** - `http://localhost:8001`
+- **MySQL** - `localhost:3307`
+- **phpMyAdmin** - `http://localhost:8081`
 
-### Шаг 4: Установка зависимостей Yii2
+### Шаг 4: Установка зависимостей и миграции
 
 ```bash
 # Войти в PHP контейнер
@@ -48,7 +61,7 @@ docker exec -it yii-php bash
 # Установить Composer зависимости
 composer install
 
-# Выполнить миграции
+# Выполнить миграции базы данных
 php yii migrate --interactive=0
 
 # Выйти из контейнера
@@ -64,7 +77,7 @@ exit
 
 ---
 
-## 🛠️ Установка без Docker (Локальная разработка)
+## Установка без Docker (Локальная разработка)
 
 ### Предварительные требования
 - PHP 8.2+
@@ -83,7 +96,7 @@ cd yii2-app
 composer install
 ```
 
-### Шаг 4: Настройка модуля Story
+### Шаг 5: Настройка модуля Story (для локальной разработки)
 
 В файле `config/web.php` добавьте модуль:
 
@@ -133,7 +146,7 @@ docker system prune -a
 
 ---
 
-## 🗄️ База данных
+## База данных
 
 ### Миграции
 
@@ -175,7 +188,7 @@ php yii migrate/create create_new_table
 
 ---
 
-## 📁 Структура модуля Story
+## Структура модуля Story
 
 ```
 modules/story/
@@ -202,18 +215,46 @@ modules/story/
 
 ---
 
-## 🎯 Основные маршруты
+## Основные маршруты и функционал
+
+### Маршруты модуля Story
 
 | URL | Описание | Метод |
 |-----|----------|-------|
-| `/story` | Главная страница - форма создания | GET |
-| `/story/default/index` | То же самое | GET |
-| `/story/default/stream` | Страница генерации (SSE) | GET |
-| `/story/default/generate` | API endpoint для генерации | GET (SSE) |
-| `/story/default/history` | История всех сказок | GET |
+| `/story` | Главная страница - форма создания сказки | GET |
+| `/story/default/index` | Альтернативный URL формы создания | GET |
+| `/story/default/stream` | Страница генерации (SSE streaming) | GET |
+| `/story/default/generate` | API endpoint для генерации (SSE) | GET |
+| `/story/default/history` | История всех созданных сказок | GET |
 | `/story/default/view?id=1` | Просмотр конкретной сказки | GET |
 | `/story/default/delete?id=1` | Удаление сказки | POST |
-| `/story/default/health-check` | Проверка Python API | GET |
+| `/story/default/health-check` | Проверка доступности Python API | GET |
+
+### Функциональные возможности
+
+#### Создание сказки
+- Выбор возрастной группы (3-5, 6-8, 9-12 лет)
+- Выбор языка (Русский/Казахский)
+- Добавление кастомных персонажей
+- Указание темы (опционально)
+
+#### Streaming генерация
+- Отображение текста в реальном времени
+- Server-Sent Events (SSE) технология
+- Прогресс-бар генерации
+- Автосохранение в БД по завершении
+
+#### Управление историями
+- Просмотр всех созданных сказок
+- Детальный просмотр с форматированием
+- Удаление ненужных сказок
+- Сортировка по дате создания
+
+#### Пользовательский интерфейс
+- Responsive дизайн для всех устройств
+- Bootstrap 5 компоненты
+- Анимации и переходы
+- Интуитивная навигация
 
 
 ### Просмотр логов
@@ -240,7 +281,7 @@ php yii cache/flush-all
 rm -rf runtime/cache/*
 ```
 
-## 📝 Composer зависимости
+##  Composer зависимости
 
 ```json
 {
@@ -276,7 +317,7 @@ docker exec -it yii-php curl http://python-api:8000/health
 
 ---
 
-## 🚀 Деплой на production
+##  Деплой на production
 
 ###  Оптимизируйте Composer
 
@@ -284,7 +325,7 @@ docker exec -it yii-php curl http://python-api:8000/health
 composer install --optimize-autoloader --no-dev
 ```
 
-## 📊 Мониторинг
+##  Мониторинг
 
 ### Health Checks
 
@@ -337,29 +378,267 @@ php yii fixture/load              # Загрузить fixtures
 
 ---
 
-## 🤝 Интеграция с Python API
+## Интеграция с Python API
 
-### Как работает интеграция
+### Архитектура взаимодействия
 
-1. **Форма** (`index.php`) → отправка данных
-2. **Controller** → сохранение в сессию → редирект на `stream`
-3. **Stream page** (`stream.php`) → подключение к SSE endpoint
-4. **SSE Endpoint** (`generate`) → прокси к Python API
-5. **Python API** → генерация через OpenAI
-6. **Streaming** → текст возвращается по частям
-7. **Сохранение** → готовая сказка в БД
+```
+ Пользовательский интерфейс (Yii2)
+         ↓
+    Форма создания сказки
+         ↓
+ Controller (DefaultController)
+         ↓
+ Сохранение в сессию + редирект
+         ↓
+ Stream страница (SSE)
+         ↓
+ Proxy запрос к Python API
+         ↓
+ Python FastAPI
+         ↓
+ OpenAI GPT генерация
+         ↓
+ Streaming ответ
+         ↓
+ Сохранение в MySQL БД
+```
 
 ### Класс StoryApiService
 
+Основной класс для взаимодействия с Python API:
+
 ```php
+// Инициализация сервиса
 $service = new StoryApiService([
     'apiUrl' => 'http://python-api:8000',
     'timeout' => 60,
 ]);
 
-// Генерация с callback
+// Генерация сказки с streaming
 $service->generateStoryStream($data, function($chunk) {
     echo "data: " . json_encode(['chunk' => $chunk]) . "\n\n";
     flush();
 });
+
+// Проверка доступности API
+$isHealthy = $service->healthCheck();
+```
+
+### Примеры запросов к Python API
+
+#### Health Check
+```php
+// GET /health
+$response = $service->healthCheck();
+// Возвращает: true/false
+```
+
+#### Генерация сказки
+```php
+// POST /generate/stream
+$data = [
+    'age_group' => '6-8',
+    'language' => 'ru',
+    'characters' => ['заяц', 'лиса']
+];
+
+$service->generateStoryStream($data, $callback);
+```
+
+---
+
+## Модуль Story - детальная структура
+
+### Controller: DefaultController
+
+Основные методы:
+- `actionIndex()` - форма создания сказки
+- `actionStream()` - страница генерации
+- `actionGenerate()` - SSE endpoint
+- `actionHistory()` - история сказок
+- `actionView($id)` - просмотр сказки
+- `actionDelete($id)` - удаление сказки
+- `actionHealthCheck()` - проверка API
+
+### Models
+
+#### Story (ActiveRecord)
+```php
+class Story extends \yii\db\ActiveRecord
+{
+    // Атрибуты:
+    // - id: int
+    // - age: int (возраст ребенка)
+    // - language: string (ru/kk)
+    // - characters: text (JSON)
+    // - content: text (Markdown)
+    // - created_at: timestamp
+}
+```
+
+#### StoryForm (Form Model)
+```php
+class StoryForm extends Model
+{
+    // Валидация:
+    // - age_group: required, in range
+    // - language: required, in range
+    // - characters: array, max 5 items
+    // - theme: string, max 100 chars
+}
+```
+
+### Views
+
+#### Layouts
+- `main.php` - основной layout модуля
+- Bootstrap 5 стилизация
+- Навигационное меню
+
+#### Pages
+- `index.php` - форма создания сказки
+- `stream.php` - страница генерации с SSE
+- `history.php` - список всех сказок
+- `view.php` - детальный просмотр сказки
+
+---
+
+## Тестирование
+
+### Запуск тестов
+
+```bash
+# Все тесты
+vendor/bin/codecept run
+
+# Функциональные тесты
+vendor/bin/codecept run functional
+
+# Юнит-тесты
+vendor/bin/codecept run unit
+
+# Тесты модуля Story
+vendor/bin/codecept run functional StoryCest
+```
+
+### Написание тестов
+
+```php
+// Пример функционального теста
+class StoryCest
+{
+    public function testCreateStory(FunctionalTester $I)
+    {
+        $I->amOnPage('/story');
+        $I->see('Создать сказку');
+        $I->selectOption('[name="age_group"]', '6-8');
+        $I->click('Создать сказку');
+        $I->seeInCurrentUrl('/story/default/stream');
+    }
+}
+```
+
+---
+
+## Мониторинг и логирование
+
+### Yii2 логи
+
+```bash
+# Просмотр логов приложения
+docker exec -it yii-php tail -f /app/runtime/logs/app.log
+
+# Логи ошибок
+docker exec -it yii-php tail -f /app/runtime/logs/error.log
+
+# Логи веб-сервера
+docker exec -it yii-php tail -f /var/log/apache2/error.log
+```
+
+### Настройка логирования
+
+В `config/web.php`:
+```php
+'components' => [
+    'log' => [
+        'traceLevel' => YII_DEBUG ? 3 : 0,
+        'targets' => [
+            [
+                'class' => 'yii\log\FileTarget',
+                'levels' => ['error', 'warning'],
+                'logFile' => '@runtime/logs/error.log',
+            ],
+            [
+                'class' => 'yii\log\FileTarget',
+                'levels' => ['info'],
+                'logFile' => '@runtime/logs/app.log',
+                'categories' => ['story'],
+            ],
+        ],
+    ],
+],
+```
+
+---
+
+## Оптимизация производительности
+
+### Кеширование
+
+```bash
+# Очистка всего кеша
+docker exec -it yii-php php yii cache/flush-all
+
+# Очистка кеша схемы БД
+docker exec -it yii-php php yii cache/flush-schema
+```
+
+### Оптимизация для production
+
+```bash
+# Оптимизация автозагрузки Composer
+docker exec -it yii-php composer install --optimize-autoloader --no-dev
+
+# Включение OPcache (в php.ini)
+opcache.enable=1
+opcache.memory_consumption=128
+opcache.max_accelerated_files=4000
+```
+
+---
+
+## Безопасность
+
+### Защита от CSRF
+
+Все формы защищены CSRF токенами:
+```php
+<?= Html::beginForm(['story/default/generate'], 'post', ['csrf' => true]) ?>
+```
+
+### Валидация входных данных
+
+```php
+// StoryForm правила валидации
+public function rules()
+{
+    return [
+        [['age_group', 'language'], 'required'],
+        ['age_group', 'in', 'range' => ['3-5', '6-8', '9-12']],
+        ['language', 'in', 'range' => ['ru', 'kk']],
+        ['characters', 'each', 'rule' => ['string', 'max' => 50]],
+        ['characters', 'validateCharacterCount'],
+    ];
+}
+```
+
+### Защита от XSS
+
+```php
+// Автоматическое экранирование в View
+<?= Html::encode($story->title) ?>
+
+// Безопасный рендеринг Markdown
+<?= Yii::$app->formatter->asMarkdown($story->content) ?>
 ```
