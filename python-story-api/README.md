@@ -1,6 +1,6 @@
 # Story Generator API - Python Backend
 
-**FastAPI микросервис для генерации детских сказок с использованием OpenAI GPT**
+**Генерации детских сказок на FastAPI с использованием OpenAI API**
 
 
 ## Быстрый старт с Docker (Рекомендуется)
