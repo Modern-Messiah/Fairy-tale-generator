@@ -114,6 +114,7 @@ async def generate_story(request: StoryRequest):
             async for chunk in story_service.generate_story_stream(
                 age=request.age,
                 language=request.language,
+                genre=request.genre,
                 characters=request.characters,
             ):
                 chunk_count += 1

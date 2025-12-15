@@ -122,6 +122,26 @@ $this->params["breadcrumbs"][] = $this->title;
                             ]) ?>
                     </div>
 
+                    <!-- Жанр -->
+                    <div class = "mb-4 form-section"
+                        <div class = "form-section-icon"3</div>
+                        <?= $form
+                            ->field($model, "genre")
+                            ->dropDownList(StoryForm::getGenreOptions(), [
+                                "promt" => "Выберите жанр сказки...",
+                                "class" =>
+                                    "form-control form-cotrol-lg shadow-sm custom-input",
+                            ])
+                            ->label("Жанр сказки", [
+                                "class" => "form-label fw-bold fs-5",
+                            ]) ?>
+                    <div class = "form-text">
+                        <i class = "bi bi info-circle-fill text-primary"></i>
+                        Выберите стиль вашей сказки
+                    </div>
+                   </div>
+
+
                     <!-- Персонажи -->
                     <div class="mb-4 form-section">
                         <div class="form-section-icon">🎭</div>

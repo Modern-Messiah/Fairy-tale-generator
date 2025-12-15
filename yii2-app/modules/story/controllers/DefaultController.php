@@ -128,9 +128,12 @@ class DefaultController extends Controller
                     $fullContent .= $chunk;
                 } else {
                     // Логируем превышение лимита
-                    Yii::warning("Content length limit exceeded, truncating", __METHOD__);
+                    Yii::warning(
+                        "Content length limit exceeded, truncating",
+                        __METHOD__,
+                    );
                 }
-                
+
                 $chunkCount++;
 
                 // Отправляем chunk клиенту
@@ -172,21 +175,20 @@ class DefaultController extends Controller
 
             // Очищаем данные из сессии
             Yii::$app->session->remove("storyFormData");
-            
+
             // Очищаем переменные для освобождения памяти
             $fullContent = null;
             unset($fullContent);
-            
         } catch (\Exception $e) {
             Yii::error($e->getMessage(), __METHOD__);
-            
+
             // Гарантированная очистка сессии при ошибке
             Yii::$app->session->remove("storyFormData");
-            
+
             // Очищаем переменные
             $fullContent = null;
             unset($fullContent);
-            
+
             $errorData = json_encode([
                 "error" => "Ошибка генерации: " . $e->getMessage(),
             ]);

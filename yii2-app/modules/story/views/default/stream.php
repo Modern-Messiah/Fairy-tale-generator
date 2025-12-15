@@ -2,6 +2,7 @@
 
 use yii\helpers\Html;
 use yii\helpers\Url;
+use app\modules\story\models\StoryForm;
 
 /** @var yii\web\View $this */
 /** @var array $formData */
@@ -41,6 +42,15 @@ $languageName = $formData["language"] === "ru" ? "Русский" : "Казах�
                             <strong>Язык:</strong><br>
                             <span class="text-primary fs-5"><?= Html::encode(
                                 $languageName,
+                            ) ?></span>
+                        </div>
+                        <div class = "col-md-4 text-center">
+                            <div class ="param-icon"></div>
+                            <strong>Жанр:</strong><br>
+                            <span class = "text-primary fs-5"><?= Html::encode(
+                                StoryForm::getGenreOptions()[
+                                    $formData["genre"]
+                                ] ?? "Волшебная сказка",
                             ) ?></span>
                         </div>
                         <div class="col-md-4 text-center">
@@ -502,5 +512,6 @@ $this->registerCss("
     background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
 }
 ");
+
 
 ?>

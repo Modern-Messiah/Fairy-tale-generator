@@ -12,6 +12,7 @@ class StoryForm extends Model
     public $age;
     public $language;
     public $characters = [];
+    public $genre;
 
     /**
      * {@inheritdoc}
@@ -19,12 +20,29 @@ class StoryForm extends Model
     public function rules()
     {
         return [
-            [['age', 'language', 'characters'], 'required'],
-            ['age', 'integer', 'min' => 1, 'max' => 18],
-            ['language', 'string'],
-            ['language', 'in', 'range' => ['ru', 'kk']],
-            ['characters', 'each', 'rule' => ['string']],
-            ['characters', 'validateCharactersCount'],
+            [["age", "language", "genre", "characters"], "required"],
+            ["age", "integer", "min" => 1, "max" => 18],
+            ["genre", "string"],
+            [
+                "genre",
+                "in",
+                "range" => [
+                    "adventure",
+                    "fantasy",
+                    "magic",
+                    "comedy",
+                    "drama",
+                    "animals",
+                    "family",
+                    "educational",
+                    "detective",
+                    "travel",
+                ],
+            ],
+            ["language", "string"],
+            ["language", "in", "range" => ["ru", "kk"]],
+            ["characters", "each", "rule" => ["string"]],
+            ["characters", "validateCharactersCount"],
         ];
     }
 
@@ -34,18 +52,18 @@ class StoryForm extends Model
     public function validateCharactersCount($attribute, $params)
     {
         if (!is_array($this->$attribute)) {
-            $this->addError($attribute, 'Неверный формат данных');
+            $this->addError($attribute, "Неверный формат данных");
             return;
         }
-        
+
         $count = count($this->$attribute);
-        
+
         if ($count < 2) {
-            $this->addError($attribute, 'Выберите минимум 2 персонажа');
+            $this->addError($attribute, "Выберите минимум 2 персонажа");
         }
-        
+
         if ($count > 5) {
-            $this->addError($attribute, 'Выберите не более 5 персонажей');
+            $this->addError($attribute, "Выберите не более 5 персонажей");
         }
     }
 
@@ -55,9 +73,10 @@ class StoryForm extends Model
     public function attributeLabels()
     {
         return [
-            'age' => 'Возраст ребенка (лет)',
-            'language' => 'Язык сказки',
-            'characters' => 'Персонажи',
+            "age" => "Возраст ребенка (лет)",
+            "language" => "Язык сказки",
+            "characters" => "Персонажи",
+            "genre" => "Жанр сказки",
         ];
     }
 
@@ -68,8 +87,29 @@ class StoryForm extends Model
     public static function getLanguageOptions()
     {
         return [
-            'ru' => 'Русский',
-            'kk' => 'Казахский (Қазақша)',
+            "ru" => "Русский",
+            "kk" => "Казахский (Қазақша)",
+        ];
+    }
+
+    /**
+     * Жанр сказок
+     * @return array
+     */
+
+    public static function getGenreOptions()
+    {
+        return [
+            "adventure" => "Приключения",
+            "fantasy" => "Фэнтези",
+            "magic" => "Волшебная сказка",
+            "comedy" => "Комедия",
+            "drama" => "Драма",
+            "animals" => "Сказка о животных",
+            "family" => "Семейная сказка",
+            "educational" => "Поучительная сказка",
+            "detective" => "Детектив",
+            "travel" => "Путешествия",
         ];
     }
 
@@ -81,32 +121,32 @@ class StoryForm extends Model
     {
         return [
             // Русские сказочные персонажи
-            'Заяц' => 'Заяц',
-            'Волк' => 'Волк',
-            'Лиса' => 'Лиса',
-            'Медведь' => 'Медведь',
-            'Колобок' => 'Колобок',
-            'Курочка Ряба' => 'Курочка Ряба',
-            'Маша' => 'Маша (из "Маша и медведь")',
-            'Иван-царевич' => 'Иван-царевич',
-            'Баба-Яга' => 'Баба-Яга',
-            'Кощей Бессмертный' => 'Кощей Бессмертный',
-            'Змей Горыныч' => 'Змей Горыныч',
-            'Василиса Прекрасная' => 'Василиса Прекрасная',
-            'Царевна-лягушка' => 'Царевна-лягушка',
-            'Илья Муромец' => 'Илья Муромец',
-            
+            "Заяц" => "Заяц",
+            "Волк" => "Волк",
+            "Лиса" => "Лиса",
+            "Медведь" => "Медведь",
+            "Колобок" => "Колобок",
+            "Курочка Ряба" => "Курочка Ряба",
+            "Маша" => 'Маша (из "Маша и медведь")',
+            "Иван-царевич" => "Иван-царевич",
+            "Баба-Яга" => "Баба-Яга",
+            "Кощей Бессмертный" => "Кощей Бессмертный",
+            "Змей Горыныч" => "Змей Горыныч",
+            "Василиса Прекрасная" => "Василиса Прекрасная",
+            "Царевна-лягушка" => "Царевна-лягушка",
+            "Илья Муромец" => "Илья Муромец",
+
             // Казахские сказочные персонажи
-            'Алдар Көсе' => 'Алдар Көсе',
-            'Әйел Арстан' => 'Әйел Арстан (Женщина-лев)',
-            'Ер Төстік' => 'Ер Төстік',
-            'Жиренше' => 'Жиренше',
-            'Қарақшы' => 'Қарақшы (Разбойник)',
-            'Тазша бала' => 'Тазша бала',
-            'Қанбақ шал' => 'Қанбақ шал',
-            'Алпамыс батыр' => 'Алпамыс батыр',
-            'Қобыланды батыр' => 'Қобыланды батыр',
-            'Жалмауыз кемпір' => 'Жалмауыз кемпір (Баба-Яга)',
+            "Алдар Көсе" => "Алдар Көсе",
+            "Әйел Арстан" => "Әйел Арстан (Женщина-лев)",
+            "Ер Төстік" => "Ер Төстік",
+            "Жиренше" => "Жиренше",
+            "Қарақшы" => "Қарақшы (Разбойник)",
+            "Тазша бала" => "Тазша бала",
+            "Қанбақ шал" => "Қанбақ шал",
+            "Алпамыс батыр" => "Алпамыс батыр",
+            "Қобыланды батыр" => "Қобыланды батыр",
+            "Жалмауыз кемпір" => "Жалмауыз кемпір (Баба-Яга)",
         ];
     }
 
@@ -117,9 +157,10 @@ class StoryForm extends Model
     public function toApiData()
     {
         return [
-            'age' => (int)$this->age,
-            'language' => $this->language,
-            'characters' => array_values($this->characters),
+            "age" => (int) $this->age,
+            "language" => $this->language,
+            "genre" => $this->genre,
+            "characters" => array_values($this->characters),
         ];
     }
 }
