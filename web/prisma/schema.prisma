@@ -1,0 +1,22 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Story {
+  id         Int      @id @default(autoincrement())
+  age        Int
+  language   String
+  genre      String
+  characters Json
+  content    String
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([language])
+  @@index([age])
+}
