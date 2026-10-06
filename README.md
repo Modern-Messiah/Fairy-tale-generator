@@ -1,287 +1,58 @@
-# 📚 Fairy Tale Generator
+# Генератор сказок
 
-**Полноценное веб-приложение для генерации детских сказок с использованием искусственного интеллекта**
+Веб-приложение на TypeScript: форма, потоковая генерация сказки и история. Интерфейс на русском и казахском. Текст сказки пишется на языке, выбранном в форме.
 
-Проект состоит из двух основных компонентов:
-- **Python API** - бэкенд на FastAPI с интеграцией OpenAI 
-- **Yii2 Frontend** - веб-интерфейс на PHP фреймворке Yii2
+Команды запуска и проверок лежат в `justfile`. Подробности устройства и API — в [docs/development.md](docs/development.md). Заметки для агента лежат в `.grok/skills/`: `fairy-tale` и `fairy-tale-ui`.
 
----
+## Стек
 
-## Возможности
+- Next.js, React, TypeScript
+- Zod и react-hook-form
+- Prisma и PostgreSQL 16
+- AI SDK и xAI (`XAI_API_KEY`, модель `grok-4.7`)
 
-- **Генерация сказок** через OpenAI GPT-4o-mini
-- **Мультиязычность** - поддержка русского и казахского языков
-- **Адаптация по возрасту** - настройки для разных возрастных групп
-- **Streaming генерация** - отображение текста в реальном времени
-- **История сказок** - сохранение и управление созданными историями
-- **Кастомизация персонажей** - добавление своих героев
-- **Docker поддержка** - полная контейнеризация
-- **Responsive дизайн** - работа на всех устройствах
+Ключ модели читается только на сервере.
 
----
+## Язык сайта
 
-## Быстрый старт
+В шапке переключатель «Русский | Қазақша». Выбор хранится в cookie `ui-locale` (`ru` или `kk`) и меняет язык интерфейса: подписи, заголовки и сообщения формы. Язык самой сказки задаётся отдельным полем «Язык сказки». У новой формы он совпадает с языком сайта, пока его не изменят.
 
-### Предварительные требования
-- Docker и Docker Compose
-- OpenAI API ключ
+Ответы API остаются на русском. Казахский интерфейс показывает их перевод.
 
-### 1. Клонирование и настройка
+## Внешний вид
+
+Светлая тема — тёплая бумага и зелёный акцент. Тёмная — лесная ночь и золотой акцент, без чёрного фона. Текст сказки набран Literata. Остальной интерфейс использует системный шрифт.
+
+## Локальный запуск
+
+Нужны Node.js 22, Docker и [just](https://github.com/casey/just).
 
 ```bash
-git clone <repository-url>
-cd Fairy-tale-generator
+just setup
+just dev
 ```
 
-### 2. Настройка OpenAI API
+`just setup` создаёт `.env`, ставит зависимости, поднимает PostgreSQL и применяет миграции. В `.env` впишите `XAI_API_KEY`, если нужна генерация.
 
-Создайте файл `.env` в папке `python-story-api/`:
+Откройте http://localhost:3000
+
+| Страница | Адрес |
+| --- | --- |
+| Новая сказка | http://localhost:3000 |
+| История | http://localhost:3000/history |
+| Проверка сервиса | http://localhost:3000/api/health |
+
+Полный подъём приложения и базы:
 
 ```bash
-cp python-story-api/.env.example python-story-api/.env
+just up
 ```
 
-Отредактируйте `python-story-api/.env`:
-```env
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-4o-mini
-API_HOST=0.0.0.0
-API_PORT=8000
-LOG_LEVEL=INFO
-```
-
-### 3. Запуск приложения
+## Проверки
 
 ```bash
-cd yii2-app
-docker-compose up -d
+just check
+just build
 ```
 
-### 4. Установка зависимостей и миграции
-
-```bash
-# Войти в PHP контейнер
-docker exec -it yii-php bash
-
-# Установить зависимости
-composer install
-
-# Выполнить миграции БД
-php yii migrate --interactive=0
-
-# Выйти из контейнера
-exit
-```
-
----
-
-## Доступ к приложению
-
-После запуска приложение будет доступно по адресам:
-
-| Компонент | URL | Описание |
-|-----------|-----|----------|
-| **Веб-интерфейс** | http://localhost:8000 | Основное приложение |
-| **Генератор сказок** | http://localhost:8000/story | Создание новых сказок |
-| **Python API** | http://localhost:8001 | API документация |
-| **phpMyAdmin** | http://localhost:8081 | Управление БД |
-| **API Docs** | http://localhost:8001/docs | Swagger документация |
-
-**Данные для доступа к phpMyAdmin:**
-- Логин: `root`
-- Пароль: `root`
-
----
-
-## Архитектура проекта
-
-```
-Fairy-tale-generator/
-├── python-story-api/          # Python FastAPI бэкенд
-│   ├── app/                   # Исходный код API
-│   ├── Dockerfile             # Docker образ Python
-│   ├── requirements.txt       # Python зависимости
-│   └── README.md              # Документация API
-├── yii2-app/                  # Yii2 фронтенд
-│   ├── modules/story/         # Модуль сказок
-│   ├── config/                # Конфигурация
-│   ├── docker-compose.yml     # Docker конфигурация
-│   └── README.md              # Документация фронтенда
-└── README.md                  # Этот файл
-```
-
----
-
-## Как это работает?
-
-### 1. Пользовательский интерфейс (Yii2)
-- Пользователь заполняет форму создания сказки
-- Выбирает возраст, язык, персонажей
-- Отправляет запрос на бэкенд
-
-### 2. API слой (Python FastAPI)
-- Принимает запрос от фронтенда
-- Формирует промпт для OpenAI GPT
-- Обрабатывает ответ от AI
-
-### 3. Искусственный интеллект (OpenAI)
-- Генерирует уникальную сказку
-- Учитывает возраст и языковые настройки
-- Возвращает текст в реальном времени
-
-### 4. Обратная связь и сохранение
-- Текст отображается пользователю через streaming
-- Готовая сказка сохраняется в базу данных
-- Доступна в истории созданных сказок
-
----
-
-## Технологический стек
-
-### Backend (Python API)
-- **FastAPI** - современный веб-фреймворк
-- **OpenAI GPT** - генерация текста
-- **Pydantic** - валидация данных
-- **Uvicorn** - ASGI сервер
-- **Docker** - контейнеризация
-
-### Frontend (Yii2)
-- **Yii2 Framework** - PHP фреймворк
-- **Bootstrap 5** - CSS фреймворк
-- **jQuery** - JavaScript библиотека
-- **Apache** - веб-сервер
-- **MySQL** - база данных
-
-### Инфраструктура
-- **Docker Compose** - оркестрация контейнеров
-- **MySQL 8** - система управления БД
-- **phpMyAdmin** - веб-интерфейс для MySQL
-
----
-
-## Использование приложения
-
-### Создание сказки
-
-1. Откройте http://localhost:8000/story
-2. Выберите возраст ребенка (3-5, 6-8, 9-12 лет)
-3. Выберите язык (Русский/Казахский)
-4. Добавьте персонажей (опционально)
-5. Нажмите "Создать сказку"
-6. Наблюдайте за генерацией в реальном времени
-
-### Управление историей
-
-- Просмотр всех созданных сказок: http://localhost:8000/story/default/history
-- Детальный просмотр: клик по любой сказке в истории
-- Удаление: кнопка "Удалить" на странице просмотра
-
----
-
-## Разработка
-
-### Локальная разработка
-
-Для разработки каждого компонента отдельно:
-
-```bash
-# Python API
-cd python-story-api
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-
-# Yii2 Frontend
-cd yii2-app
-composer install
-php yii serve
-```
-
-### Отладка
-
-```bash
-# Просмотр логов всех сервисов
-docker-compose logs -f
-
-# Логи конкретного сервиса
-docker-compose logs -f php          # Yii2
-docker-compose logs -f story-api    # Python API
-docker-compose logs -f db           # MySQL
-
-# Проверка статуса сервисов
-docker-compose ps
-```
-
----
-
-## Тестирование
-
-### Python API
-```bash
-cd python-story-api
-pytest
-```
-
-### Yii2 Frontend
-```bash
-cd yii2-app
-# Запуск тестов
-vendor/bin/codecept run
-
-# Запуск конкретных тестов
-vendor/bin/codecept run functional
-vendor/bin/codecept run unit
-```
-
----
-
-## Производственный деплой
-
-### Оптимизация
-
-```bash
-# Оптимизация Composer автозагрузки
-docker exec -it yii-php composer install --optimize-autoloader --no-dev
-
-# Очистка кеша
-docker exec -it yii-php php yii cache/flush-all
-```
-
-### Мониторинг
-
-```bash
-# Health checks
-curl http://localhost:8000                    # Yii2
-curl http://localhost:8001/health             # Python API
-docker exec -it yii-db mysqladmin ping -h localhost -u root -proot  # MySQL
-```
-
----
-
-## Поиск и устранение проблем
-
-### Частые проблемы
-
-1. **OpenAI API ключ не работает**
-   - Проверьте валидность ключа
-   - Убедитесь, что у вас достаточно средств на счете
-
-2. **Контейнеры не запускаются**
-   ```bash
-   docker-compose down -v
-   docker-compose up --build
-   ```
-
-3. **База данных не доступна**
-   ```bash
-   docker-compose restart db
-   docker exec -it yii-php php yii migrate
-   ```
-
-4. **Python API не отвечает**
-   ```bash
-   docker-compose logs story-api
-   curl http://localhost:8001/health
-   ```
+Тесты не ходят в модель и в базу. Поток генерации проверяется с подменённым генератором.
